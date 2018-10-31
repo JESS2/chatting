@@ -21,25 +21,28 @@ var count = 1;
 // io.on(EVENT, 함수)는 서버에 전달된 EVENT를 인식하여 함수를 실행시키는 event listener.
 // 접속한 사용자의 socket이 매개변수로 전달됨.
 // 해당 접속자(socket)에 관련한 event들은 이 'connection' event listener 안에 작성되어야 함.
-io.on('connection', function(socket){
-  console.log('user connected: ', socket.id);
+io.on('connection', function(socket) {
   var name = "user" + count++;
-  // var name = 
+  console.log('user connected: ', name);
 
-  // 'change name'이란 evnet를 발생시킴.
+  // 'change name'이라는 evnet를 발생시킴.
   // 이 event는 client.html의 해당 event listener에서 처리됨.
   // 서버가 event를 하나의 특정한 클라이언트에게만 전달: io.to(socket.id).emit
   io.to(socket.id).emit('change name', name);
+  
+  io.emit('entrance', name);
 
   // 해당 socket에 전달된 EVENT를 인식하여 함수를 실행시킴.
   // 접속이 해제되는 경우, 'disconnect' event가 자동으로 발생됨.
-  socket.on('disconnect', function(){
-    console.log('user disconnected: ', socket.id);
+  socket.on('disconnect', function() {
+    console.log('user disconnected: ', name);
+
+    io.emit('leave', name);
   });
 
   // 메세지를 전송할 경우, 'send message' event가 자동으로 발생됨.
   // 메세지를 보낸 접속자의 이름과 채팅메세지를 parameter로 함께 전달함.
-  socket.on('send message', function(name,text){
+  socket.on('send message', function(name, text) {
     var msg = name + ' : ' + text;
     console.log(msg);
     // 모든 접속자들에게 event를 전달함

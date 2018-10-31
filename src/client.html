@@ -4,13 +4,16 @@
     <meta charset="utf-8">
     <title>Chat</title>
     <style>
-      .chat_log { width: 95%; height: 200px; }
+      .chat_log {
+        width: 95%;
+        height: 200px;
+        overflow-y: scroll;
+      }
       .name { width: 10%; }
       .message { width: 70%; }
       .chat { width: 10%; }
       .talk {
         display: inline;
-        padding: 0;
         margin: 0;
         float: left;
         color: blue;
@@ -19,19 +22,22 @@
         float: right;
         color: red;
       }
+      .leave {
+        margin: 0;
+        text-align: center;
+      }
     </style>
   </head>
   <body>
     <button onclick="openHomePage()">홈으로 돌아가기</button>
     <div>
-      <div id="chatLog" class="chat_log" readonly></div>
+      <div id="chatLog" class="chat_log"></div>
     </div>
     <form id="chat">
       <input id="name" class="name" type="text" readonly>
       <input id="message" class="message" type="text">
-      <input type="submit" class="chat" value="chat"/>
+      <input type="submit" class="chat" value="전송"/>
     </form>
-    <div id="box" class="box">
     <script src="/socket.io/socket.io.js"></script>
     <script src="//code.jquery.com/jquery-1.11.1.js"></script>
     <script>
@@ -50,17 +56,17 @@
 
       // 입력창이 submit되면 서버로 'send message' 사용자 정의 event와 이름, 채팅메세지를 전달(emit).
       $('#chat').on('submit', function(e){
-        // 클라이언트에서 socket을 통해 event를 서버로 전달: socket.emit
-        socket.emit('send message', $('#name').val(), $('#message').val());
-        $('#message').val(''); // 초기화
-        $('#message').focus(); // 포커스
+        if ($('#message').val() != '') {
+          // 클라이언트에서 socket을 통해 event를 서버로 전달: socket.emit
+          socket.emit('send message', $('#name').val(), $('#message').val());
+          $('#message').val(''); // 초기화
+          $('#message').focus(); // 포커스
+        }
         e.preventDefault(); // 이벤트 정지
       });
 
       // 서버에서 'receive message' event가 emit되면 message를 '#chatLog'에 추가하고 스크롤함
       socket.on('receive message', function(name, msg){
-        // $('#chatLog').append(msg+'\n');
-        console.log(name, $('#name').val());
         if (name === $('#name').val()) {
           $('#chatLog').append($('<p class="talk me"></p><br/>').text(msg));
         } else {
@@ -68,6 +74,18 @@
         }
         $('#chatLog').scrollTop($('#chatLog')[0].scrollHeight);
       });
+
+      socket.on('leave', function(name) {
+        $('#chatLog').append($('<p class="leave"></p><br/>').text(name + '님이 채팅방을 나갔습니다.'));
+        $('#chatLog').scrollTop($('#chatLog')[0].scrollHeight);
+      })
+
+      socket.on('entrance', function(name) {
+        if (name !== $('#name').val()) {
+          $('#chatLog').append($('<p class="leave"></p><br/>').text(name + '님이 채팅방에 입장했습니다.'));
+        }
+        $('#chatLog').scrollTop($('#chatLog')[0].scrollHeight);
+      })
     </script>
   </body>
 </html>
