@@ -5,11 +5,17 @@ var http = require('http').Server(app); // app을 http에 연결.
 var io = require('socket.io')(http);    // http를 다시 socket.io에 연결.
 
 // 모든 request는 client.html을 response하도록 설정함.
-app.get('/',function(req, res){
+app.get('/', function(req, res) {
+  res.sendFile(__dirname + '/home/home.html');
+});
+
+app.get('/chat', function(req, res) {
   res.sendFile(__dirname + '/client.html');
 });
 
 var count = 1;
+
+// console.log(location.href);
 
 // 사용자가 웹사이트에 접속하면 socket.io에 의해 'connection' event가 자동으로 발생됨.
 // io.on(EVENT, 함수)는 서버에 전달된 EVENT를 인식하여 함수를 실행시키는 event listener.
@@ -18,6 +24,8 @@ var count = 1;
 io.on('connection', function(socket){
   console.log('user connected: ', socket.id);
   var name = "user" + count++;
+  // var name = 
+
   // 'change name'이란 evnet를 발생시킴.
   // 이 event는 client.html의 해당 event listener에서 처리됨.
   // 서버가 event를 하나의 특정한 클라이언트에게만 전달: io.to(socket.id).emit
@@ -36,7 +44,7 @@ io.on('connection', function(socket){
     console.log(msg);
     // 모든 접속자들에게 event를 전달함
     // 서버가 event를 모든 클라이언트들에게 전달: io.emit
-    io.emit('receive message', msg);
+    io.emit('receive message', name, msg);
   });
 });
 

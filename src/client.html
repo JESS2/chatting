@@ -4,15 +4,27 @@
     <meta charset="utf-8">
     <title>Chat</title>
     <style>
-      .chat_log{ width: 95%; height: 200px; }
-      .name{ width: 10%; }
-      .message{ width: 70%; }
-      .chat{ width: 10%; }
+      .chat_log { width: 95%; height: 200px; }
+      .name { width: 10%; }
+      .message { width: 70%; }
+      .chat { width: 10%; }
+      .talk {
+        display: inline;
+        padding: 0;
+        margin: 0;
+        float: left;
+        color: blue;
+      }
+      .talk.me {
+        float: right;
+        color: red;
+      }
     </style>
   </head>
   <body>
+    <button onclick="openHomePage()">홈으로 돌아가기</button>
     <div>
-      <textarea id="chatLog" class="chat_log" readonly></textarea>
+      <div id="chatLog" class="chat_log" readonly></div>
     </div>
     <form id="chat">
       <input id="name" class="name" type="text" readonly>
@@ -23,6 +35,10 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="//code.jquery.com/jquery-1.11.1.js"></script>
     <script>
+      function openHomePage () {
+        location.href = '/';
+      }
+
       // socket 변수 설정
       // var socket = io(호스트서버주소)
       var socket = io();
@@ -42,8 +58,14 @@
       });
 
       // 서버에서 'receive message' event가 emit되면 message를 '#chatLog'에 추가하고 스크롤함
-      socket.on('receive message', function(msg){
-        $('#chatLog').append(msg+'\n');
+      socket.on('receive message', function(name, msg){
+        // $('#chatLog').append(msg+'\n');
+        console.log(name, $('#name').val());
+        if (name === $('#name').val()) {
+          $('#chatLog').append($('<p class="talk me"></p><br/>').text(msg));
+        } else {
+          $('#chatLog').append($('<p class="talk"></p><br/>').text(msg));
+        }
         $('#chatLog').scrollTop($('#chatLog')[0].scrollHeight);
       });
     </script>
