@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Chat</title>
+    <style>
+      .chat_log{ width: 95%; height: 200px; }
+      .name{ width: 10%; }
+      .message{ width: 70%; }
+      .chat{ width: 10%; }
+    </style>
+  </head>
+  <body>
+    <div>
+      <textarea id="chatLog" class="chat_log" readonly></textarea>
+    </div>
+    <form id="chat">
+      <input id="name" class="name" type="text" readonly>
+      <input id="message" class="message" type="text">
+      <input type="submit" class="chat" value="chat"/>
+    </form>
+    <div id="box" class="box">
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="//code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+      // socket 변수 설정
+      // var socket = io(호스트서버주소)
+      var socket = io();
+
+      // 접속자 이름 변경
+      socket.on('change name', function(name){
+        $('#name').val(name);
+      });
+
+      // 입력창이 submit되면 서버로 'send message' 사용자 정의 event와 이름, 채팅메세지를 전달(emit).
+      $('#chat').on('submit', function(e){
+        // 클라이언트에서 socket을 통해 event를 서버로 전달: socket.emit
+        socket.emit('send message', $('#name').val(), $('#message').val());
+        $('#message').val(''); // 초기화
+        $('#message').focus(); // 포커스
+        e.preventDefault(); // 이벤트 정지
+      });
+
+      // 서버에서 'receive message' event가 emit되면 message를 '#chatLog'에 추가하고 스크롤함
+      socket.on('receive message', function(msg){
+        $('#chatLog').append(msg+'\n');
+        $('#chatLog').scrollTop($('#chatLog')[0].scrollHeight);
+      });
+    </script>
+  </body>
+</html>
